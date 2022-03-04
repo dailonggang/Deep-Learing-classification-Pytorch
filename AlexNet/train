@@ -1,0 +1,138 @@
+import os
+import sys
+import json
+
+import torch
+import torch.nn as nn
+from torchvision import transforms, datasets, utils
+import matplotlib.pyplot as plt
+import numpy as np
+import torch.optim as optim
+from tqdm import tqdm
+
+from model import AlexNet
+
+
+def main():
+    # 如果有英伟达显卡可以转到GPU
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("using {} device.".format(device))
+
+    data_transform = {
+        "train": transforms.Compose([transforms.RandomResizedCrop(224),  # 随机裁剪
+                                     transforms.RandomHorizontalFlip(),  # 随即反转
+                                     transforms.ToTensor(),              # 转换为totensor
+                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]),  # 进行标准化处理
+        "val": transforms.Compose([transforms.Resize((224, 224)),  # cannot 224, must (224, 224)
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])}
+
+    # os.getcwd()返回当前目录，os.path.join()进行路径拼接，../..返回上上层目录,os.path.absname()函数返回的是包含文件的绝对路径
+    data_root = os.path.abspath(os.path.join(os.getcwd(), "../.."))  # get data root path
+    image_path = os.path.join(data_root, "CNN", "AlexNet", "flower_data")  # flower data set path
+    assert os.path.exists(image_path), "{} path does not exist.".format(image_path)
+    train_dataset = datasets.ImageFolder(root=os.path.join(image_path, "train"),  # flower_data文件夹下train训练集
+                                         transform=data_transform["train"])  # 传入train这个key
+    train_num = len(train_dataset)  # 训练集图片数
+
+    flower_list = train_dataset.class_to_idx  # 分类名称所对应的索引
+    # 遍历flower_list将key, val进行反转存入字典，得到结果为{'daisy':0, 'dandelion':1, 'roses':2, 'sunflower':3, 'tulips':4}
+    cla_dict = dict((val, key) for key, val in flower_list.items())  #字典(Dictionary).items() 函数以列表返回可遍历的(键, 值) 元组数组
+    # 将dict写入json文件
+    json_str = json.dumps(cla_dict, indent=4)
+    with open('class_indices.json', 'w') as json_file:
+        json_file.write(json_str)  # 将json_str写入json_file文件中，调用open()函数写入class_indices.jison文件中
+
+    batch_size = 32
+    nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
+    print('Using {} dataloader workers every process'.format(nw))
+
+    train_loader = torch.utils.data.DataLoader(train_dataset,
+                                               batch_size=batch_size, shuffle=True,
+                                               num_workers=nw)
+
+    validate_dataset = datasets.ImageFolder(root=os.path.join(image_path, "val"),
+                                            transform=data_transform["val"])
+    val_num = len(validate_dataset)
+    validate_loader = torch.utils.data.DataLoader(validate_dataset,
+                                                  batch_size=4, shuffle=True,
+                                                  num_workers=nw)
+    # str.format()对应参数传到{}中
+    print("using {} images for training, {} images for validation.".format(train_num,
+                                                                           val_num))
+    # test_data_iter = iter(validate_loader)  # iter() 函数用来生成迭代器
+    # # next() 返回迭代器的下一个项目，要和生成迭代器的 iter() 函数一起使用。
+    # test_image, test_label = test_data_iter.next()
+    #
+    # def imshow(img):
+    #     img = img / 2 + 0.5  # unnormalize（反归一化）
+    #     npimg = img.numpy()
+    #     plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    #     plt.show()
+    #
+    # print(' '.join('%5s' % cla_dict[test_label[j].item()] for j in range(4)))
+    # imshow(utils.make_grid(test_image))  # make_grid()的作用是将若干幅图像拼成一幅图像
+
+    net = AlexNet(num_classes=5, init_weights=True)
+
+    net.to(device)  # 将网络指定到指定设备
+    loss_function = nn.CrossEntropyLoss()  # 使用针对多类别的交叉熵损失函数
+    # pata = list(net.parameters())
+    optimizer = optim.Adam(net.parameters(), lr=0.0002)  # 定义Adam优化器
+
+    epochs = 10
+    save_path = './AlexNet.pth'  # 保存权重的路径
+    best_acc = 0.0  # 最佳准确率
+    train_steps = len(train_loader)  # batch_size=32,故len(label)==32, len(train_loader)==3306/32
+
+    for epoch in range(epochs):
+        # train，用来对Dropout和BN进行控制
+        net.train()
+        running_loss = 0.0  # 训练过程中的平均损失
+        train_bar = tqdm(train_loader, file=sys.stdout)  # tqdm()用于进度条显示
+        # 遍历数据集
+        for step, data in enumerate(train_bar):
+            # 将数据分为图像和对应的标签
+            images, labels = data
+            # 清空梯度信息
+            optimizer.zero_grad()
+            outputs = net(images.to(device))  # 将训练图片指定到指定设备中
+            loss = loss_function(outputs, labels.to(device))  # 得到损失
+            loss.backward()  # 将损失方向传播到每个节点中
+            optimizer.step()  # 更新每个节点的参数
+
+            # print statistics
+            running_loss += loss.item()  # 将得到的损失值进行累加
+
+            train_bar.desc = "train epoch[{}/{}] loss:{:.3f}".format(epoch + 1,
+                                                                     epochs,
+                                                                     loss)
+        # validate
+        net.eval()
+        acc = 0.0  # accumulate accurate number / epoch
+        with torch.no_grad():  # 不进行损失梯度
+            val_bar = tqdm(validate_loader, file=sys.stdout)
+            for val_data in val_bar:
+                val_images, val_labels = val_data
+                outputs = net(val_images.to(device))
+                # torch.max()函数返回两个值，第一个是具体的value(用下划线表示)，第二个是value所作在的index(用pred表示)
+                # dim=1表示输出所在行的最大值
+                predict_y = torch.max(outputs, dim=1)[1]
+                # print(predict_y)
+                # 验证正确的样本个数
+                acc += torch.eq(predict_y, val_labels.to(device)).sum().item()
+
+        val_accurate = acc / val_num  # 得到验证集的准确率
+        print('[epoch %d] train_loss: %.3f  val_accuracy: %.3f' %
+              (epoch + 1, running_loss / train_steps, val_accurate))
+
+        if val_accurate > best_acc:
+            best_acc = val_accurate
+            # 进行模型参数保存
+            torch.save(net.state_dict(), save_path)
+
+    print('Finished Training')
+
+
+if __name__ == '__main__':
+    main()
