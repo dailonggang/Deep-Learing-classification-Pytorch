@@ -3,17 +3,18 @@ import torch
 
 
 class BasicBlock(nn.Module):
-    expansion = 1
+    expansion = 1  # 定义residual结构的卷积核个数是否发生变化
 
     def __init__(self, in_channel, out_channel, stride=1, downsample=None, **kwargs):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(in_channels=in_channel, out_channels=out_channel,
-                               kernel_size=3, stride=stride, padding=1, bias=False)
+                               kernel_size=3, stride=stride, padding=1, bias=False)  # 使用BN层就没有必要使用bias
         self.bn1 = nn.BatchNorm2d(out_channel)
         self.relu = nn.ReLU()
         self.conv2 = nn.Conv2d(in_channels=out_channel, out_channels=out_channel,
                                kernel_size=3, stride=1, padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channel)
+        # 定义residual残差边是否采用1×1的卷积
         self.downsample = downsample
 
     def forward(self, x):
@@ -35,12 +36,6 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
-    """
-    注意：原论文中，在虚线残差结构的主分支上，第一个1x1卷积层的步距是2，第二个3x3卷积层步距是1。
-    但在pytorch官方实现过程中是第一个1x1卷积层的步距是1，第二个3x3卷积层步距是2，
-    这么做的好处是能够在top1上提升大概0.5%的准确率。
-    可参考Resnet v1.5 https://ngc.nvidia.com/catalog/model-scripts/nvidia:resnet_50_v1_5_for_pytorch
-    """
     expansion = 4
 
     def __init__(self, in_channel, out_channel, stride=1, downsample=None,
@@ -87,16 +82,15 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self,
-                 block,
-                 blocks_num,
-                 num_classes=1000,
-                 include_top=True,
-                 groups=1,
-                 width_per_group=64):
+    def __init__(self, block,  # 对应为BasicBlock还是Bottleneck
+                 blocks_num,   # 这里的blocks_num代表conv2x-conv5x所使用残差结构的数目，是一个列表数据结构。
+                               # 例如在34-layer的网络结构中对用为[3, 4, 6, 3]
+                 num_classes=1000,  # 对应类别数
+                 include_top=True,  # 暂时用不到
+                 groups=1, width_per_group=64):
         super(ResNet, self).__init__()
         self.include_top = include_top
-        self.in_channel = 64
+        self.in_channel = 64  # max pool后的通道数
 
         self.groups = groups
         self.width_per_group = width_per_group
@@ -118,8 +112,11 @@ class ResNet(nn.Module):
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
-    def _make_layer(self, block, channel, block_num, stride=1):
+    def _make_layer(self, block, channel,  # 这里的channel对应着残差结构第一层对应的通道数
+                    block_num, stride=1):
         downsample = None
+
+        # 这里对于18和34层的网络而言，两个条件都不满足所以直接跳过if语句
         if stride != 1 or self.in_channel != channel * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.in_channel, channel * block.expansion, kernel_size=1, stride=stride, bias=False),
