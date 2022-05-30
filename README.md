@@ -15,7 +15,7 @@
 * Gong Cheng, et al, Anchor-free Oriented Proposal Generator for Object Detection.遥感旋转目标检测 [[paper](https://arxiv.org/pdf/2110.01931.pdf)][[code](https://github.com/jbwang1997/AOPG)]
 
 ### 图像分类(Classification)-Papers
-* LeNet [[paper](http://yann.lecun.com/exdb/lenet/index.html)]
+* LeNet [[paper](http://lushuangning.oss-cn-beijing.aliyuncs.com/CNN%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97/Gradient-Based_Learning_Applied_to_Document_Recognition.pdf)]
 * AlexNet http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
 * ZFNet(Visualizing and Understanding Convolutional Networks) https://arxiv.org/abs/1311.2901
 VGG https://arxiv.org/abs/1409.1556
