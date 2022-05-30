@@ -16,8 +16,8 @@
 
 ### 图像分类(Classification)-Papers
 * LeNet [[paper](http://yann.lecun.com/exdb/lenet/index.html)]
-AlexNet http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
-ZFNet(Visualizing and Understanding Convolutional Networks) https://arxiv.org/abs/1311.2901
+* AlexNet http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
+* ZFNet(Visualizing and Understanding Convolutional Networks) https://arxiv.org/abs/1311.2901
 VGG https://arxiv.org/abs/1409.1556
 GoogLeNet, Inceptionv1(Going deeper with convolutions) https://arxiv.org/abs/1409.4842
 Batch Normalization https://arxiv.org/abs/1502.03167
