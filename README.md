@@ -16,7 +16,7 @@
 
 ### 图像分类(Classification)-Papers
 * LeNet [[paper](http://lushuangning.oss-cn-beijing.aliyuncs.com/CNN%E5%AD%A6%E4%B9%A0%E7%B3%BB%E5%88%97/Gradient-Based_Learning_Applied_to_Document_Recognition.pdf)]
-* AlexNet [[paper]()]http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
+* AlexNet [[paper](http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf)]
 * ZFNet[[paper]()]
 * VGG https://arxiv.org/abs/1409.1556
 * GoogLeNet, Inceptionv1(Going deeper with convolutions) https://arxiv.org/abs/1409.4842
