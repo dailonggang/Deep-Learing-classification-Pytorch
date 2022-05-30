@@ -5,7 +5,7 @@
 * predict.py： 调用模型进行预测的文件
 * class_indices.json： 训练数据集对应的标签文件
 
-### 3.2 Papers
+### 3.2 
 --------------
 ### 2021
 * Feng et al, DARDet: A Dense Anchor-free Rotated Object Detector in Aerial Images.注：无锚框自然图像 [[paper](https://arxiv.org/pdf/2110.01025.pdf)][[code](https://github.com/zf020114/DARDet)]
@@ -14,8 +14,8 @@
 //github.com/csuhan/ReDet)]
 * Gong Cheng, et al, Anchor-free Oriented Proposal Generator for Object Detection.遥感旋转目标检测 [[paper](https://arxiv.org/pdf/2110.01931.pdf)][[code](https://github.com/jbwang1997/AOPG)]
 
-### 图像分类(Classification)
-# LeNet [[paper](http://yann.lecun.com/exdb/lenet/index.html)]
+### 图像分类(Classification)-Papers
+* LeNet [[paper](http://yann.lecun.com/exdb/lenet/index.html)]
 AlexNet http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
 ZFNet(Visualizing and Understanding Convolutional Networks) https://arxiv.org/abs/1311.2901
 VGG https://arxiv.org/abs/1409.1556
